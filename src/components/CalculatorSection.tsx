@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
-import { CalendarDays, Clock, MapPin, Sparkles } from "lucide-react";
+import { CalendarDays, Clock, User, Sparkles, RotateCcw } from "lucide-react";
+import { calculateBazi, type BaziChart } from "@/lib/bazi";
+import BaziResult from "./BaziResult";
 
 const CalculatorSection = () => {
   const [formData, setFormData] = useState({
@@ -10,12 +12,50 @@ const CalculatorSection = () => {
     hour: "",
     gender: "male",
   });
+  
+  const [result, setResult] = useState<BaziChart | null>(null);
+  const [birthInfo, setBirthInfo] = useState<{
+    year: number;
+    month: number;
+    day: number;
+    hourIndex: number;
+    gender: string;
+  } | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder - would calculate bazi here
-    alert("功能開發中，敬請期待！\n\nComing soon!");
+    
+    const year = parseInt(formData.year);
+    const month = parseInt(formData.month);
+    const day = parseInt(formData.day);
+    const hourIndex = parseInt(formData.hour);
+    
+    if (isNaN(year) || isNaN(month) || isNaN(day) || isNaN(hourIndex)) {
+      return;
+    }
+    
+    if (year < 1900 || year > 2100) {
+      return;
+    }
+    
+    const chart = calculateBazi(year, month, day, hourIndex);
+    setResult(chart);
+    setBirthInfo({ year, month, day, hourIndex, gender: formData.gender });
   };
+
+  const handleReset = () => {
+    setResult(null);
+    setBirthInfo(null);
+    setFormData({
+      year: "",
+      month: "",
+      day: "",
+      hour: "",
+      gender: "male",
+    });
+  };
+
+  const isFormValid = formData.year && formData.month && formData.day && formData.hour !== "";
 
   return (
     <section id="calculator" className="py-24 bg-background relative">
@@ -53,7 +93,7 @@ const CalculatorSection = () => {
               <div>
                 <label className="block text-sm text-muted-foreground mb-2 flex items-center gap-2">
                   <CalendarDays className="w-4 h-4" />
-                  出生年份
+                  出生年份 (西元)
                 </label>
                 <input
                   type="number"
@@ -137,7 +177,7 @@ const CalculatorSection = () => {
             {/* Gender */}
             <div className="mb-8">
               <label className="block text-sm text-muted-foreground mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4" />
+                <User className="w-4 h-4" />
                 性別
               </label>
               <div className="flex gap-4">
@@ -150,7 +190,7 @@ const CalculatorSection = () => {
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                     className="w-4 h-4 accent-accent"
                   />
-                  <span className="text-foreground">男</span>
+                  <span className="text-foreground">男 (乾造)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -161,19 +201,38 @@ const CalculatorSection = () => {
                     onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                     className="w-4 h-4 accent-accent"
                   />
-                  <span className="text-foreground">女</span>
+                  <span className="text-foreground">女 (坤造)</span>
                 </label>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-4 rounded-lg bg-primary text-primary-foreground font-medium text-lg hover:bg-crimson-glow transition-all duration-300 glow-crimson flex items-center justify-center gap-2"
-            >
-              <Sparkles className="w-5 h-5" />
-              開始排盤
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="submit"
+                disabled={!isFormValid}
+                className="flex-1 py-4 rounded-lg bg-primary text-primary-foreground font-medium text-lg hover:bg-crimson-glow transition-all duration-300 glow-crimson flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary"
+              >
+                <Sparkles className="w-5 h-5" />
+                開始排盤
+              </button>
+              
+              {result && (
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="px-6 py-4 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-accent/50 transition-all duration-300 flex items-center justify-center gap-2"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  重新輸入
+                </button>
+              )}
+            </div>
           </form>
+
+          {/* Result Display */}
+          {result && birthInfo && (
+            <BaziResult chart={result} birthInfo={birthInfo} />
+          )}
         </motion.div>
       </div>
     </section>
