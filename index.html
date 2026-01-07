@@ -19,6 +19,24 @@
 
   <body>
     <div id="root"></div>
+
+    <!-- GitHub Pages (no-build) fallback: redirect to standalone docs site -->
+    <script>
+      (function () {
+        var host = window.location.hostname || "";
+        if (!host.endsWith("github.io")) return;
+
+        var path = window.location.pathname || "/";
+        if (path.includes("/docs")) return;
+
+        var parts = path.split("/").filter(Boolean);
+        var repo = parts.length ? parts[0] : "";
+        var base = repo ? "/" + repo + "/" : "/";
+
+        window.location.replace(base + "docs/");
+      })();
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
