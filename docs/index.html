@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>八字命理 | EurekaX</title>
+    <meta name="description" content="探索中國傳統八字命理的奧秘，計算您的四柱八字">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #d4af37;
+            --gold-light: #f4e4ba;
+            --dark-bg: #0a0a0f;
+            --dark-card: #12121a;
+            --dark-border: #2a2a3a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: var(--dark-bg);
+            color: #f5f5f5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--dark-border);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gold);
+            text-decoration: none;
+        }
+        
+        nav a {
+            color: #a0a0a0;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover {
+            color: var(--gold);
+        }
+        
+        /* Main content */
+        main {
+            position: relative;
+            z-index: 1;
+            padding-top: 80px;
+        }
+        
+        /* Hero section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--gold), var(--gold-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+        
+        .bagua-symbol {
+            font-size: 6rem;
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Calculator section */
+        .calculator {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .calculator h2 {
+            text-align: center;
+            font-size: 2rem;
+            color: var(--gold);
+            margin-bottom: 2rem;
+        }
+        
+        .form-card {
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-group select,
+        .form-group input {
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #f5f5f5;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+        
+        .gender-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .gender-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 0.5rem;
+            color: #a0a0a0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .gender-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--gold), #b8962e);
+            border: none;
+            border-radius: 0.5rem;
+            color: #0a0a0f;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        /* Result section */
+        .result {
+            display: none;
+            margin-top: 2rem;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .result h3 {
+            text-align: center;
+            color: var(--gold);
+            margin-bottom: 1.5rem;
+        }
+        
+        .pillars {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pillar {
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .pillar-title {
+            font-size: 0.85rem;
+            color: #a0a0a0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .pillar-stem {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .pillar-branch {
+            font-size: 1.5rem;
+            color: #a0a0a0;
+        }
+        
+        .pillar-element {
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            display: inline-block;
+        }
+        
+        /* Element colors */
+        .element-wood { color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+        .element-fire { color: #ef4444; background: rgba(239, 68, 68, 0.2); }
+        .element-earth { color: #eab308; background: rgba(234, 179, 8, 0.2); }
+        .element-metal { color: #f5f5f5; background: rgba(245, 245, 245, 0.2); }
+        .element-water { color: #3b82f6; background: rgba(59, 130, 246, 0.2); }
+        
+        .day-master {
+            text-align: center;
+            padding: 1.5rem;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--gold);
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+        }
+        
+        .day-master-title {
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        
+        .day-master-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .elements-chart {
+            background: var(--dark-bg);
+            border: 1px solid var(--dark-border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .elements-title {
+            color: var(--gold);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .element-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .element-name {
+            width: 40px;
+            font-size: 0.9rem;
+        }
+        
+        .element-progress {
+            flex: 1;
+            height: 8px;
+            background: var(--dark-card);
+            border-radius: 4px;
+            margin: 0 1rem;
+            overflow: hidden;
+        }
+        
+        .element-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .element-count {
+            width: 20px;
+            text-align: right;
+            font-size: 0.9rem;
+            color: #a0a0a0;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            border-top: 1px solid var(--dark-border);
+            margin-top: 4rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .pillars {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            nav a {
+                margin-left: 1rem;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <header>
+        <a href="#" class="logo">EurekaX</a>
+        <nav>
+            <a href="#calculator">命盤計算</a>
+            <a href="#about">關於八字</a>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="hero">
+            <div class="bagua-symbol">☯</div>
+            <h1>八字命理</h1>
+            <p>探索中國傳統命理學的智慧，透過四柱八字揭示您的命運密碼，洞察人生的機遇與挑戰</p>
+        </section>
+        
+        <section class="calculator" id="calculator">
+            <h2>計算您的八字</h2>
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>出生年份</label>
+                        <select id="year"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>月份</label>
+                        <select id="month">
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4">4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>日期</label>
+                        <select id="day"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>時辰</label>
+                        <select id="hour">
+                            <option value="0">子時 (23:00-01:00)</option>
+                            <option value="1">丑時 (01:00-03:00)</option>
+                            <option value="2">寅時 (03:00-05:00)</option>
+                            <option value="3">卯時 (05:00-07:00)</option>
+                            <option value="4">辰時 (07:00-09:00)</option>
+                            <option value="5">巳時 (09:00-11:00)</option>
+                            <option value="6">午時 (11:00-13:00)</option>
+                            <option value="7">未時 (13:00-15:00)</option>
+                            <option value="8">申時 (15:00-17:00)</option>
+                            <option value="9">酉時 (17:00-19:00)</option>
+                            <option value="10">戌時 (19:00-21:00)</option>
+                            <option value="11">亥時 (21:00-23:00)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>性別</label>
+                    <div class="gender-group">
+                        <button type="button" class="gender-btn active" data-gender="male">男</button>
+                        <button type="button" class="gender-btn" data-gender="female">女</button>
+                    </div>
+                </div>
+                
+                <button class="submit-btn" onclick="calculateBazi()">開始計算</button>
+            </div>
+            
+            <div class="result" id="result">
+                <h3>您的八字命盤</h3>
+                
+                <div class="pillars" id="pillars"></div>
+                
+                <div class="day-master" id="dayMaster"></div>
+                
+                <div class="elements-chart">
+                    <h4 class="elements-title">五行分佈</h4>
+                    <div id="elementsChart"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="about" style="padding: 4rem 2rem; max-width: 800px; margin: 0 auto;">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 2rem;">關於八字命理</h2>
+            <p style="color: #a0a0a0; line-height: 2; text-align: center;">
+                八字，又稱四柱，是中國傳統命理學的重要組成部分。它根據一個人出生的年、月、日、時，
+                配合天干地支來推算命運。每一柱由一個天干和一個地支組成，共八個字，故稱「八字」。
+                通過分析八字中的五行生剋關係，可以了解一個人的性格特點、事業發展、婚姻狀況等人生軌跡。
+            </p>
+        </section>
+    </main>
+    
+    <footer>
+        <p>© 2024 EurekaX. 探索命理的奧秘</p>
+    </footer>
+    
+    <script>
+        // Constants
+        const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const EARTHLY_BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        const FIVE_ELEMENTS = ['木', '火', '土', '金', '水'];
+        
+        const STEM_ELEMENTS = {
+            '甲': '木', '乙': '木',
+            '丙': '火', '丁': '火',
+            '戊': '土', '己': '土',
+            '庚': '金', '辛': '金',
+            '壬': '水', '癸': '水'
+        };
+        
+        const BRANCH_ELEMENTS = {
+            '子': '水', '丑': '土', '寅': '木', '卯': '木',
+            '辰': '土', '巳': '火', '午': '火', '未': '土',
+            '申': '金', '酉': '金', '戌': '土', '亥': '水'
+        };
+        
+        const ELEMENT_COLORS = {
+            '木': { text: '#22c55e', bg: 'rgba(34, 197, 94, 0.2)' },
+            '火': { text: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' },
+            '土': { text: '#eab308', bg: 'rgba(234, 179, 8, 0.2)' },
+            '金': { text: '#f5f5f5', bg: 'rgba(245, 245, 245, 0.2)' },
+            '水': { text: '#3b82f6', bg: 'rgba(59, 130, 246, 0.2)' }
+        };
+        
+        // Initialize form
+        const yearSelect = document.getElementById('year');
+        const daySelect = document.getElementById('day');
+        const currentYear = new Date().getFullYear();
+        
+        for (let y = currentYear; y >= 1900; y--) {
+            const option = document.createElement('option');
+            option.value = y;
+            option.textContent = y + '年';
+            yearSelect.appendChild(option);
+        }
+        
+        for (let d = 1; d <= 31; d++) {
+            const option = document.createElement('option');
+            option.value = d;
+            option.textContent = d + '日';
+            daySelect.appendChild(option);
+        }
+        
+        // Gender buttons
+        document.querySelectorAll('.gender-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Calculate Year Pillar
+        function calculateYearPillar(year) {
+            const stemIndex = (year - 4) % 10;
+            const branchIndex = (year - 4) % 12;
+            return {
+                stem: HEAVENLY_STEMS[stemIndex],
+                branch: EARTHLY_BRANCHES[branchIndex]
+            };
+        }
+        
+        // Calculate Month Pillar
+        function calculateMonthPillar(year, month) {
+            const yearStem = calculateYearPillar(year).stem;
+            const yearStemIndex = HEAVENLY_STEMS.indexOf(yearStem);
+            const baseMonthStemIndex = (yearStemIndex % 5) * 2 + 2;
+            const monthStemIndex = (baseMonthStemIndex + month - 1) % 10;
+            const monthBranchIndex = (month + 1) % 12;
+            return {
+                stem: HEAVENLY_STEMS[monthStemIndex],
+                branch: EARTHLY_BRANCHES[monthBranchIndex]
+            };
+        }
+        
+        // Calculate Day Pillar (simplified)
+        function calculateDayPillar(year, month, day) {
+            const baseDate = new Date(1900, 0, 31);
+            const targetDate = new Date(year, month - 1, day);
+            const daysDiff = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+            const stemIndex = (daysDiff % 10 + 10) % 10;
+            const branchIndex = (daysDiff % 12 + 12) % 12;
+            return {
+                stem: HEAVENLY_STEMS[stemIndex],
+                branch: EARTHLY_BRANCHES[branchIndex]
+            };
+        }
+        
+        // Calculate Hour Pillar
+        function calculateHourPillar(dayStem, hourIndex) {
+            const dayStemIndex = HEAVENLY_STEMS.indexOf(dayStem);
+            const baseHourStemIndex = (dayStemIndex % 5) * 2;
+            const hourStemIndex = (baseHourStemIndex + hourIndex) % 10;
+            return {
+                stem: HEAVENLY_STEMS[hourStemIndex],
+                branch: EARTHLY_BRANCHES[hourIndex]
+            };
+        }
+        
+        // Calculate element counts
+        function calculateElementCounts(pillars) {
+            const counts = { '木': 0, '火': 0, '土': 0, '金': 0, '水': 0 };
+            pillars.forEach(pillar => {
+                counts[STEM_ELEMENTS[pillar.stem]]++;
+                counts[BRANCH_ELEMENTS[pillar.branch]]++;
+            });
+            return counts;
+        }
+        
+        // Main calculate function
+        function calculateBazi() {
+            const year = parseInt(document.getElementById('year').value);
+            const month = parseInt(document.getElementById('month').value);
+            const day = parseInt(document.getElementById('day').value);
+            const hour = parseInt(document.getElementById('hour').value);
+            
+            const yearPillar = calculateYearPillar(year);
+            const monthPillar = calculateMonthPillar(year, month);
+            const dayPillar = calculateDayPillar(year, month, day);
+            const hourPillar = calculateHourPillar(dayPillar.stem, hour);
+            
+            const pillars = [yearPillar, monthPillar, dayPillar, hourPillar];
+            const pillarNames = ['年柱', '月柱', '日柱', '時柱'];
+            
+            // Render pillars
+            const pillarsContainer = document.getElementById('pillars');
+            pillarsContainer.innerHTML = pillars.map((pillar, i) => {
+                const stemElement = STEM_ELEMENTS[pillar.stem];
+                const branchElement = BRANCH_ELEMENTS[pillar.branch];
+                const colors = ELEMENT_COLORS[stemElement];
+                return `
+                    <div class="pillar">
+                        <div class="pillar-title">${pillarNames[i]}</div>
+                        <div class="pillar-stem" style="color: ${colors.text}">${pillar.stem}</div>
+                        <div class="pillar-branch">${pillar.branch}</div>
+                        <div class="pillar-element" style="color: ${colors.text}; background: ${colors.bg}">${stemElement}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Render day master
+            const dayMasterElement = STEM_ELEMENTS[dayPillar.stem];
+            const dmColors = ELEMENT_COLORS[dayMasterElement];
+            document.getElementById('dayMaster').innerHTML = `
+                <div class="day-master-title">日主（命主）</div>
+                <div class="day-master-value" style="color: ${dmColors.text}">${dayPillar.stem} · ${dayMasterElement}</div>
+            `;
+            
+            // Render elements chart
+            const counts = calculateElementCounts(pillars);
+            const maxCount = Math.max(...Object.values(counts), 1);
+            const elementsContainer = document.getElementById('elementsChart');
+            elementsContainer.innerHTML = FIVE_ELEMENTS.map(element => {
+                const count = counts[element];
+                const width = (count / maxCount) * 100;
+                const colors = ELEMENT_COLORS[element];
+                return `
+                    <div class="element-bar">
+                        <span class="element-name" style="color: ${colors.text}">${element}</span>
+                        <div class="element-progress">
+                            <div class="element-fill" style="width: ${width}%; background: ${colors.text}"></div>
+                        </div>
+                        <span class="element-count">${count}</span>
+                    </div>
+                `;
+            }).join('');
+            
+            // Show result
+            document.getElementById('result').classList.add('show');
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
